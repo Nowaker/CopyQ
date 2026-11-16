@@ -11,6 +11,7 @@
 #include "itemsynctests.h"
 #include "itemtagstests.h"
 #include "tests_clipboarddataguard.h"
+#include "tests_itemlabel.h"
 
 #include "app/app.h"
 #include "common/client_server.h"
@@ -846,6 +847,7 @@ private:
     IMPL_TEST_GROUP(ClipboardDataGuard)
     IMPL_TEST_GROUP(ItemEncrypted)
     IMPL_TEST_GROUP(ItemFakeVim)
+    IMPL_TEST_GROUP(ItemLabel)
     IMPL_TEST_GROUP(ItemImage)
     IMPL_TEST_GROUP(ItemPinned)
     IMPL_TEST_GROUP(ItemSync)

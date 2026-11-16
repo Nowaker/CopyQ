@@ -27,3 +27,6 @@ extern const QLatin1String mimeColor;
 extern const QLatin1String mimeOutputTab;
 extern const QLatin1String mimeDisplayItemInMenu;
 extern const QLatin1String mimeSecret;
+// JSON describing binary formats evicted to keep local storage under its limit:
+// {"label": "[image: PNG, ...]", "formats": [{"format": "image/png", "size": 123, "sha256": "<hex>"}]}
+extern const QLatin1String mimeEvictedFormats;
