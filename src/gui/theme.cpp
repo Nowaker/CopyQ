@@ -396,6 +396,9 @@ void Theme::resetTheme()
     m_theme["find_fg"]   = Option("black", "VALUE", ui ? ui->pushButtonColorFoundFg : nullptr);
     m_theme["notes_bg"]  = Option(defaultColorVarToolTipBase, "VALUE", ui ? ui->pushButtonColorNotesBg : nullptr);
     m_theme["notes_fg"]  = Option(defaultColorVarToolTipText, "VALUE", ui ? ui->pushButtonColorNotesFg : nullptr);
+    // Text of items that hold a credential, and labels of items without text (itemLabel()).
+    m_theme["credential_fg"] = Option("fg + #b00 - #0aa");
+    m_theme["label_fg"] = Option("num_fg");
     m_theme["notification_bg"]  = Option("#333", "VALUE", ui ? ui->pushButtonColorNotificationBg : nullptr);
     m_theme["notification_fg"]  = Option("#ddd", "VALUE", ui ? ui->pushButtonColorNotificationFg : nullptr);
 

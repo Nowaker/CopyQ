@@ -1100,6 +1100,9 @@ unlike in GUI, where row numbers start from 1 by default.
    matches none of them is still reported, as ``"standalone"``, if it is a
    single word that looks random, like a copied password or token.
 
+   Items whose text is a credential are drawn in the theme's ``credential_fg``
+   color (see :ref:`theme`).
+
    Example::
 
        copyq eval 'credentialRule(clipboard())'

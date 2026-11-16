@@ -107,6 +107,27 @@ Here are some special placeholders for CSS files:
 - ``${hsv_value_factor = 0.9}`` - set value for colors in the rest of the style
   sheet
 
+Credentials and Labels
+~~~~~~~~~~~~~~~~~~~~~~
+
+Items whose text looks like a credential (an API token, a private key, a
+password, see :js:func:`credentialRule`) are drawn in the ``credential_fg``
+color, in the item list and in the tray menu. Nothing is hidden: the color only
+warns before pasting.
+
+Items without text show a label describing what they hold, for example
+``[image: PNG, 1920×1080, 1.2 MB]``, ``[PDF: 3 pages, 120 KB]`` or
+``[object: application/x-foo, 2 KB]``, in the ``label_fg`` color.
+
+Defaults are ``credential_fg=fg + #b00 - #0aa`` (a red that stays readable on
+dark and light backgrounds) and ``label_fg=num_fg`` (as muted as row numbers).
+Selected items use ``sel_fg``. In ``items.css`` the item widgets have the
+``CopyQ_credential`` and ``CopyQ_label`` properties:
+
+.. code-block:: css
+
+    #item[CopyQ_credential="true"] { color: ${credential_fg} }
+
 Plugin Indicators
 ~~~~~~~~~~~~~~~~~
 

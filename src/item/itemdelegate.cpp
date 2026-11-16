@@ -3,12 +3,14 @@
 #include "itemdelegate.h"
 
 #include "common/client_server.h"
+#include "common/common.h"
 #include "common/contenttype.h"
 #include "common/mimetypes.h"
 #include "common/textdata.h"
 #include "common/timer.h"
 #include "gui/clipboardbrowser.h"
 #include "gui/iconfactory.h"
+#include "item/credentialdetector.h"
 #include "item/itemfactory.h"
 #include "item/itemwidget.h"
 #include "item/itemeditorwidget.h"
@@ -25,6 +27,8 @@
 namespace {
 
 const char propertySelectedItem[] = "CopyQ_selected";
+const char propertyCredentialItem[] = "CopyQ_credential";
+const char propertyLabelItem[] = "CopyQ_label";
 constexpr int defaultMaxItemHeight = 2048 * 8;
 
 void updatePalette(QWidget *widget)
@@ -536,6 +540,11 @@ ItemWidget *ItemDelegate::updateWidget(const QModelIndex &index, const QVariantM
     auto w = m_sharedData->showSimpleItems
             ? m_sharedData->itemFactory->createSimpleItem(data, parent, antialiasing)
             : m_sharedData->itemFactory->createItem(data, parent, antialiasing);
+
+    // Style sheet (items.css) colors credentials and labels of items without text.
+    QWidget *ww = w->widget();
+    ww->setProperty( propertyCredentialItem, CredentialDetector::instance().isCredentialItem(data) );
+    ww->setProperty( propertyLabelItem, textLabelDescribesData(data) );
 
     setIndexWidget(index, w);
 

@@ -160,6 +160,7 @@ private slots:
     void calledWithInstance();
 
     void credentialRule();
+    void windowTitleDescribesData();
 
     void pipingCommands();
 

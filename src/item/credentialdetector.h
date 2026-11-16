@@ -4,6 +4,7 @@
 
 #include <QRegularExpression>
 #include <QString>
+#include <QVariantMap>
 #include <QVector>
 
 class QByteArray;
@@ -35,6 +36,9 @@ public:
     QString ruleIn(const QString &text) const;
 
     bool isCredential(const QString &text) const { return !ruleIn(text).isEmpty(); }
+
+    /// Whether the item's text is a credential (hidden and secret items are never shown, so they aren't).
+    bool isCredentialItem(const QVariantMap &data) const;
 
 private:
     struct Rule {

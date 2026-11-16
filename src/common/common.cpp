@@ -7,6 +7,7 @@
 #include "common/log.h"
 #include "common/mimetypes.h"
 #include "common/textdata.h"
+#include "item/itemlabel.h"
 
 #include <QApplication>
 #include <QBuffer>
@@ -413,6 +414,8 @@ QString textLabelForData(const QVariantMap &data, const QFont &font, const QStri
 
         const QString textWithNotes = notes.isEmpty() ? text : notes + ": " + text;
         return elideText(textWithNotes, font, label, escapeAmpersands, maxWidthPixels, maxLines);
+    } else if ( const QString description = itemLabel(data); !description.isEmpty() ) {
+        label = elideText(description, font, QString(), escapeAmpersands, maxWidthPixels, maxLines);
     } else if ( findFormatsWithPrefix(true, "image/", data) ) {
         label = QObject::tr("<IMAGE>", "Label for image in clipboard");
     } else if ( data.contains(mimeItems) ) {
@@ -437,6 +440,13 @@ QString textLabelForData(const QVariantMap &data, const QFont &font, const QStri
 QString textLabelForData(const QVariantMap &data)
 {
     return textLabelForData(data, QFont(), QString());
+}
+
+bool textLabelDescribesData(const QVariantMap &data)
+{
+    return !data.contains(mimeHidden) && !data.contains(mimeSecret)
+        && !data.contains(mimeText) && !data.contains(mimeUriList)
+        && !itemLabel(data).isEmpty();
 }
 
 void renameToUnique(QString *name, const QStringList &names)

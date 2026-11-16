@@ -3,6 +3,8 @@
 #include "item/credentialdetector.h"
 
 #include "common/log.h"
+#include "common/mimetypes.h"
+#include "common/textdata.h"
 
 #include <QFile>
 #include <QJsonArray>
@@ -199,6 +201,14 @@ QString CredentialDetector::ruleIn(const QString &text) const
         return QStringLiteral("standalone");
 
     return {};
+}
+
+bool CredentialDetector::isCredentialItem(const QVariantMap &data) const
+{
+    if ( data.contains(mimeHidden) || data.contains(mimeSecret) )
+        return false;
+    const QString text = getTextData(data);
+    return !text.isEmpty() && isCredential(text);
 }
 
 bool CredentialDetector::isLoneRandomWord(const QString &word) const

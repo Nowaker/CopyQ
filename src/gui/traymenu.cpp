@@ -10,13 +10,17 @@
 #include "common/timer.h"
 #include "gui/icons.h"
 #include "gui/iconfactory.h"
+#include "item/credentialdetector.h"
 
 #include <QAction>
 #include <QApplication>
 #include <QKeyEvent>
 #include <QModelIndex>
+#include <QPainter>
+#include <QPaintEvent>
 #include <QPixmap>
 #include <QRegularExpression>
+#include <QStyleOptionMenuItem>
 #include <QLoggingCategory>
 #include <QWindow>
 
@@ -26,6 +30,7 @@ Q_DECLARE_LOGGING_CATEGORY(logCategory)
 Q_LOGGING_CATEGORY(logCategory, "copyq.traymenu")
 
 const char propertyTextFormat[] = "CopyQ_text_format";
+const char propertyTextColor[] = "CopyQ_text_color";
 
 const QIcon iconClipboard() { return getIcon("clipboard", IconPaste); }
 
@@ -105,6 +110,9 @@ void TrayMenu::updateTextFromData(QAction *act, const QVariantMap &data)
     const QString format = act->property(propertyTextFormat).toString();
     const QString label = textLabelForData( data, act->font(), format, true );
     act->setText(label);
+
+    if ( auto menu = qobject_cast<TrayMenu*>(act->parent()) )
+        act->setProperty( propertyTextColor, menu->textColorForData(data) );
 }
 
 bool TrayMenu::updateIconFromData(QAction *act, const QVariantMap &data)
@@ -361,6 +369,69 @@ void TrayMenu::leaveEvent(QEvent *event)
     auto action = activeAction();
     QMenu::leaveEvent(event);
     setActiveAction(action);
+}
+
+void TrayMenu::setItemTextColors(const QColor &credentialColor, const QColor &labelColor)
+{
+    m_credentialColor = credentialColor;
+    m_labelColor = labelColor;
+}
+
+QColor TrayMenu::textColorForData(const QVariantMap &data) const
+{
+    if ( CredentialDetector::instance().isCredentialItem(data) )
+        return m_credentialColor;
+    if ( textLabelDescribesData(data) )
+        return m_labelColor;
+    return {};
+}
+
+/*
+ * A style sheet (menu.css) gives every menu item the same text color, so items with
+ * their own color are painted again: background and icon by the style, without the
+ * text, then the text the way the style sheet lays it out (after the icon column,
+ * vertically centered). The active item keeps the style's highlighted text color.
+ */
+void TrayMenu::paintEvent(QPaintEvent *event)
+{
+    QMenu::paintEvent(event);
+
+    QPainter painter(this);
+    for (QAction *action : std::as_const(m_clipboardActions)) {
+        const QColor color = action->property(propertyTextColor).value<QColor>();
+        if ( !color.isValid() || action == activeAction() || !action->isVisible() )
+            continue;
+
+        const QRect rect = actionGeometry(action);
+        if ( !rect.intersects(event->rect()) )
+            continue;
+
+        QStyleOptionMenuItem option;
+        initStyleOption(&option, action);
+        option.rect = rect;
+        const QString text = option.text;
+        option.text.clear();
+
+        painter.save();
+        painter.setClipRect( rect & event->rect() );
+
+        QStyleOption menuOption;
+        menuOption.initFrom(this);
+        menuOption.rect = this->rect();
+        style()->drawPrimitive(QStyle::PE_PanelMenu, &menuOption, &painter, this);
+        style()->drawControl(QStyle::CE_MenuItem, &option, &painter, this);
+
+        QRect textRect = rect;
+        textRect.setLeft(rect.left() + option.maxIconWidth);
+        int flags = Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextSingleLine;
+        if ( !style()->styleHint(QStyle::SH_UnderlineShortcut, &option, this) )
+            flags |= Qt::TextHideMnemonic;
+        painter.setFont(option.font);
+        painter.setPen(color);
+        painter.drawText( QStyle::visualRect(layoutDirection(), rect, textRect), flags, text );
+
+        painter.restore();
+    }
 }
 
 void TrayMenu::inputMethodEvent(QInputMethodEvent *event)

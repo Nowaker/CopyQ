@@ -2,6 +2,7 @@
 
 #include "test_utils.h"
 #include "tests.h"
+#include "tests_common.h"
 
 // Expected rules are what flycut-copyq-bridge.py's CredentialDetector returns for the same texts.
 // Credential-looking literals are split so that secret scanners don't flag this file.
@@ -40,4 +41,14 @@ void CoreTests::credentialRule()
     RUN("credentialRule('Zażółć gęślą jaźń')", "");
     RUN("credentialRule('https://example.com/some/path?x=1')", "");
     RUN("credentialRule('')", "");
+}
+
+// Items without text are labelled by what they hold (itemLabel()), here in the window title.
+void CoreTests::windowTitleDescribesData()
+{
+    const QString png = QStringLiteral(
+        "iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAAKklEQVR4nO3NMQ0AAAgDsAmb/yALGXA06d9MeyJisVgs"
+        "FovFYrFYLP4bL9HP3Ew1mJ9PAAAAAElFTkSuQmCC");
+    RUN("setData('image/png', fromBase64('" + png + "')); updateTitle()", "");
+    WAIT_ON_OUTPUT("currentWindowTitle", appWindowTitle(QStringLiteral("[image: PNG, 40×30, 99 bytes]")));
 }

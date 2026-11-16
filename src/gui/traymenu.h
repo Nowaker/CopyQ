@@ -5,6 +5,7 @@
 
 #include "common/navigationstyle.h"
 
+#include <QColor>
 #include <QMenu>
 #include <QPointer>
 #include <QTimer>
@@ -51,6 +52,9 @@ public:
     /** Row numbers start from one instead of zero? */
     void setRowIndexFromOne(bool rowIndexFromOne) { m_rowIndexFromOne = rowIndexFromOne; }
 
+    /// Text colors of items that hold a credential and of labels of items without text.
+    void setItemTextColors(const QColor &credentialColor, const QColor &labelColor);
+
 signals:
     /** Emitted if numbered action triggered. */
     void clipboardItemActionTriggered(const QVariantMap &itemData, bool omitPaste);
@@ -68,6 +72,7 @@ protected:
     void leaveEvent(QEvent *event) override;
 
     void inputMethodEvent(QInputMethodEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
 
 private:
     void onClipboardItemActionTriggered();
@@ -76,6 +81,8 @@ private:
     void doUpdateActiveAction();
 
     void setSearchMenuItem(const QString &text);
+
+    QColor textColorForData(const QVariantMap &data) const;
 
     QPointer<QAction> m_clipboardItemActionsSeparator;
     QPointer<QAction> m_customActionsSeparator;
@@ -91,6 +98,9 @@ private:
     QTimer m_timerUpdateActiveAction;
 
     bool m_rowIndexFromOne = true;
+
+    QColor m_credentialColor;
+    QColor m_labelColor;
 
     QList<QAction*> m_clipboardActions;
     QList<QAction*> m_customActions;

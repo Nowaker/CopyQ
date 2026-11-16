@@ -64,6 +64,9 @@ QString textLabelForData(const QVariantMap &data, const QFont &font,
 
 QString textLabelForData(const QVariantMap &data);
 
+/// Whether textLabelForData() describes the item's data (itemLabel()) because it has no text.
+bool textLabelDescribesData(const QVariantMap &data);
+
 void renameToUnique(QString *name, const QStringList &names);
 
 QString dataToText(const QByteArray &bytes, const QString &mime);

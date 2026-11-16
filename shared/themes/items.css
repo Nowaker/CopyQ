@@ -17,6 +17,16 @@
     ;color: ${fg}
     ;background: transparent
 }
+#item[CopyQ_credential="true"]
+,#item[CopyQ_credential="true"] #item_child
+{
+    ;color: ${credential_fg}
+}
+#item[CopyQ_label="true"]
+,#item[CopyQ_label="true"] #item_child
+{
+    ;color: ${label_fg}
+}
 #item[CopyQ_selected="true"]
 ,#item[CopyQ_selected="true"] #item_child
 {

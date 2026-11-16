@@ -3260,6 +3260,10 @@ void MainWindow::loadSettings(QSettings &settings, AppConfig *appConfig)
     const auto menuStyleSheet = theme().getMenuStyleSheet();
     m_trayMenu->setStyleSheet(menuStyleSheet);
     m_menu->setStyleSheet(menuStyleSheet);
+    const QColor credentialColor = theme().color(QStringLiteral("credential_fg"));
+    const QColor labelColor = theme().color(QStringLiteral("label_fg"));
+    m_trayMenu->setItemTextColors(credentialColor, labelColor);
+    m_menu->setItemTextColors(credentialColor, labelColor);
 
     updateTrayMenuItems();
 
