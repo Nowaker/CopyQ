@@ -30,3 +30,7 @@ extern const QLatin1String mimeSecret;
 // JSON describing binary formats evicted to keep local storage under its limit:
 // {"label": "[image: PNG, ...]", "formats": [{"format": "image/png", "size": 123, "sha256": "<hex>"}]}
 extern const QLatin1String mimeEvictedFormats;
+// When the item was copied, milliseconds since epoch as ASCII digits.
+extern const QLatin1String mimeCopiedAt;
+// In the list of clipboard formats to save: also save every other format the clipboard offers.
+extern const QLatin1String mimeAllClipboardFormats;

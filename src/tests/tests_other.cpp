@@ -118,7 +118,7 @@ void CoreTests::clipboardToItem()
     TEST( m_test->setClipboard("TEXT1") );
     RUN("clipboard", "TEXT1");
     WAIT_ON_OUTPUT("read" << "0", "TEXT1");
-    RUN("read" << "?" << "0", "text/plain\n");
+    RUN("read" << "?" << "0", "application/x-copyq-private-copied-at\ntext/plain\n");
 
     TEST( m_test->setClipboard("DATA1", "DATA") );
     WAIT_ON_OUTPUT("clipboard" << "DATA", "DATA1");

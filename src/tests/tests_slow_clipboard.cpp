@@ -73,7 +73,7 @@ void CoreTests::slowClipboard()
     WAIT_ON_OUTPUT("read('a/a', 0, 1, 2, 3)", "2\nA\n\n");
     RUN("read('b/b', 0)", "2");
     RUN("read('c/c', 0)", "2");
-    RUN("read('?', 0)", "a/a\nb/b\nc/c\n");
+    RUN("read('?', 0)", "a/a\napplication/x-copyq-private-copied-at\nb/b\nc/c\n");
 
     const auto expectedLog = R"(^.*<cmd/monitorClipboard-\d+>: Aborting clipboard cloning: Data access took too long$)";
     const auto timeoutsBefore = count(splitLines(readLogFile(maxReadLogSize)), expectedLog);

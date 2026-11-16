@@ -2,6 +2,7 @@
 
 #include "dummyclipboard.h"
 
+#include "common/appconfig.h"
 #include "common/common.h"
 #include "common/log.h"
 #include "common/mimetypes.h"
@@ -9,6 +10,8 @@
 #include <QGuiApplication>
 #include <QMimeData>
 #include <QStringList>
+
+#include <algorithm>
 
 QClipboard::Mode modeToQClipboardMode(ClipboardMode mode)
 {
@@ -82,8 +85,11 @@ const QMimeData *DummyClipboard::mimeData(ClipboardMode mode) const
 
 bool DummyClipboard::isHidden(const QMimeData &data) const
 {
-    const QByteArray passwordManagerHint = data.data(QStringLiteral("x-kde-passwordManagerHint"));
-    return passwordManagerHint == QByteArrayLiteral("secret");
+    const QStringList formats = data.formats();
+    const QStringList skipFormats = AppConfig().option<Config::clipboard_skip_formats>();
+    return std::any_of(skipFormats.begin(), skipFormats.end(), [&](const QString &format){
+        return formats.contains(format);
+    });
 }
 
 void DummyClipboard::onChanged(int mode)

@@ -44,7 +44,9 @@ bool WinPlatformClipboard::isHidden(const QMimeData &data) const
 
         // This is set by some Qt apps
         || contains(formats, data,
-            QStringLiteral("ExcludeClipboardContentFromMonitorProcessing"), QByteArrayLiteral("1"));
+            QStringLiteral("ExcludeClipboardContentFromMonitorProcessing"), QByteArrayLiteral("1"))
+
+        || DummyClipboard::isHidden(data);
 }
 
 void WinPlatformClipboard::onChanged(int)

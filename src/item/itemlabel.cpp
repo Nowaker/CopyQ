@@ -282,7 +282,7 @@ QString byteCountLabel(qint64 bytes)
     struct Unit { const char *name; double scale; int digits; };
     static const Unit units[] = {{"KB", 1e3, 0}, {"MB", 1e6, 1}, {"GB", 1e9, 2}};
     for (const auto &unit : units) {
-        if (bytes < unit.scale * 1000 || unit.scale == 1e9) {
+        if (bytes < unit.scale * 1000 || &unit == &units[2]) {
             // snprintf rounds exact halves to even, as Python's format() does in Flycut's reference.
             char buffer[64];
             std::snprintf(buffer, sizeof(buffer), "%.*f", unit.digits, static_cast<double>(bytes) / unit.scale);

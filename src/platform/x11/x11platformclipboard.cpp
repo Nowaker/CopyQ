@@ -501,8 +501,12 @@ void X11PlatformClipboard::updateMonitoringSubscription(
     // This could make the app hang for a moment.
     m_selectionData.formats = QStringList{mimeText, mimeTextUtf8};
     for (auto &format : formats) {
-        if (!format.startsWith(QLatin1String("image/")) && !format.startsWith(QLatin1String("text/")))
+        if ( !format.startsWith(QLatin1String("image/"))
+             && !format.startsWith(QLatin1String("text/"))
+             && format != mimeAllClipboardFormats )
+        {
             m_selectionData.formats.append(format);
+        }
     }
 
     m_clipboardData.enabled = modes.testFlag(ClipboardModeFlag::Clipboard);

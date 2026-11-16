@@ -19,7 +19,6 @@ const QLatin1String mimeRank(COPYQ_MIME_PRIVATE_PREFIX "flycut-rank");
 const QLatin1String mimeSignature(COPYQ_MIME_PRIVATE_PREFIX "flycut-signature");
 const QLatin1String mimeMachine(COPYQ_MIME_PRIVATE_PREFIX "flycut-machine");
 const QLatin1String mimeApp(COPYQ_MIME_PRIVATE_PREFIX "flycut-app");
-const QLatin1String mimeCopiedAt(COPYQ_MIME_PRIVATE_PREFIX "copied-at");
 
 namespace {
 

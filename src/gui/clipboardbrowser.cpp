@@ -13,6 +13,7 @@
 #include "gui/theme.h"
 #include "item/indexes.h"
 #include "item/itemeditor.h"
+#include "item/itemeviction.h"
 #include "item/itemeditorwidget.h"
 #include "item/itemfactory.h"
 #include "item/itemstore.h"
@@ -226,6 +227,7 @@ ClipboardBrowser::ClipboardBrowser(
     initSingleShotTimer( &m_timerUpdateSizes, 0, this, &ClipboardBrowser::updateSizes );
     initSingleShotTimer( &m_timerUpdateCurrent, 0, this, &ClipboardBrowser::updateCurrent );
     initSingleShotTimer( &m_timerPreload, 0, this, &ClipboardBrowser::preloadCurrentPage );
+    initSingleShotTimer( &m_timerEvictBinaryData, 0, this, &ClipboardBrowser::evictBinaryData );
 
     m_timerDragDropScroll.setInterval(20);
     connect( &m_timerDragDropScroll, &QTimer::timeout,
@@ -1620,11 +1622,13 @@ bool ClipboardBrowser::add(const QVariantMap &data, int row)
             return false;
 
         m.insertItems(dataList, newRow);
+        rememberAddedRows(newRow, dataList.size());
     } else {
         if ( !allocateSpaceForNewItems(1) )
             return false;
 
         m.insertItem(data, newRow);
+        rememberAddedRows(newRow, 1);
     }
 
     return true;
@@ -1658,6 +1662,7 @@ bool ClipboardBrowser::addReversed(const QVector<QVariantMap> &dataList, int row
         return false;
 
     m.insertItems(items, newRow);
+    rememberAddedRows(newRow, items.size());
     return true;
 }
 
@@ -1671,8 +1676,13 @@ bool ClipboardBrowser::addAndSelect(const QVariantMap &data, int row)
 
 void ClipboardBrowser::addUnique(const QVariantMap &data, ClipboardMode mode)
 {
-    if ( moveToTop(hash(data)) ) {
+    const int existingRow = m.findItem(hash(data));
+    if (existingRow >= 0) {
         COPYQ_LOG("New item: Moving existing to top");
+        // Copying an item again makes it as recent as a new copy.
+        if ( data.contains(mimeCopiedAt) )
+            m.setData( index(existingRow), QVariantMap{{mimeCopiedAt, data[mimeCopiedAt]}}, contentType::updateData );
+        moveToTop( index(existingRow) );
         return;
     }
 
@@ -1712,6 +1722,55 @@ void ClipboardBrowser::addUnique(const QVariantMap &data, ClipboardMode mode)
     add(data);
 }
 
+void ClipboardBrowser::rememberAddedRows(int row, int count)
+{
+    const auto now = QDateTime::currentDateTime();
+    for (int i = row; i < row + count; ++i)
+        m_addedTimes.insert(QPersistentModelIndex(m.index(i)), now);
+    m_timerEvictBinaryData.start();
+}
+
+void ClipboardBrowser::evictBinaryData()
+{
+    for (auto it = m_addedTimes.begin(); it != m_addedTimes.end(); ) {
+        if ( it.key().isValid() )
+            ++it;
+        else
+            it = m_addedTimes.erase(it);
+    }
+
+    const qint64 limit = m_sharedData->binaryDataLimit;
+    if ( limit < 0 || !isLoaded() )
+        return;
+
+    const auto now = QDateTime::currentDateTime();
+    QList<BinaryDataUsage> usage;
+    usage.reserve(m.rowCount());
+    for (int row = 0; row < m.rowCount(); ++row) {
+        const QModelIndex index = m.index(row);
+        const QVariantMap data = index.data(contentType::data).toMap();
+        BinaryDataUsage item = binaryDataUsage(data, now, m_addedTimes.value(QPersistentModelIndex(index)));
+        item.keep = !m_itemSaver->canDropItem(index);
+        usage.append(item);
+    }
+
+    const QList<int> rows = rowsToEvictBinaryData(usage, limit);
+    if ( rows.isEmpty() )
+        return;
+
+    QMap<QPersistentModelIndex, QVariantMap> itemsData;
+    qint64 evictedBytes = 0;
+    for (const int row : rows) {
+        const QModelIndex index = m.index(row);
+        itemsData.insert(index, withoutBinaryData(index.data(contentType::data).toMap()));
+        evictedBytes += usage[row].bytes;
+    }
+
+    log( QStringLiteral("Tab \"%1\": evicting %2 bytes of binary data from %3 items (limit: %4 bytes)")
+         .arg(m_tabName).arg(evictedBytes).arg(rows.size()).arg(limit), LogNote );
+    m.setItemsData(itemsData);
+}
+
 void ClipboardBrowser::setItemsData(const QMap<QPersistentModelIndex, QVariantMap> &itemsData)
 {
     if ( isLoaded() )
@@ -1741,6 +1800,7 @@ bool ClipboardBrowser::loadItems(const QByteArray &itemData)
     if ( hasFocus() )
         setCurrent(0);
     onItemCountChanged();
+    m_timerEvictBinaryData.start();
 
     return true;
 }

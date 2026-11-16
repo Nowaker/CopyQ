@@ -10,7 +10,10 @@
 #include "item/itemfilter.h"
 #include "item/itemwidget.h"
 
+#include <QDateTime>
+#include <QHash>
 #include <QListView>
+#include <QPersistentModelIndex>
 #include <QPointer>
 #include <QTimer>
 #include <QVariantMap>
@@ -362,6 +365,10 @@ class ClipboardBrowser final : public QListView
         void preloadCurrentPage();
         void preload(int pixels, int direction, const QModelIndex &start);
 
+        /** Drops binary formats of bulky old items if the tab holds more than binary_data_limit. */
+        void evictBinaryData();
+        void rememberAddedRows(int row, int count);
+
         void updateCurrentIndex();
 
         void moveToTop(const QModelIndex &index);
@@ -390,6 +397,9 @@ class ClipboardBrowser final : public QListView
         QTimer m_timerUpdateCurrent;
         QTimer m_timerDragDropScroll;
         QTimer m_timerPreload;
+        QTimer m_timerEvictBinaryData;
+        // When items were added in this session; data loaded from data files has its own time.
+        QHash<QPersistentModelIndex, QDateTime> m_addedTimes;
         bool m_ignoreMouseMoveWithButtonPressed = false;
         bool m_resizing = false;
         bool m_resizeEvent = false;

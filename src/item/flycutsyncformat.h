@@ -21,10 +21,9 @@ enum List { HistoryList = 0, FavoritesList = 1 };
 extern const QLatin1String mimeClipId;
 extern const QLatin1String mimeRank;
 extern const QLatin1String mimeSignature;
-/// Where and when a clipping was copied: machine, app (as the event's "m" and "app") and time in ms (ASCII digits).
+/// Where a clipping was copied: machine and app (as the event's "m" and "app"); when is mimeCopiedAt.
 extern const QLatin1String mimeMachine;
 extern const QLatin1String mimeApp;
-extern const QLatin1String mimeCopiedAt;
 
 /// Whether a change made at (at, machine) beats one made at (otherAt, otherMachine).
 bool isNewer(qint64 at, const QString &machine, qint64 otherAt, const QString &otherMachine);

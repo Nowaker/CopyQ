@@ -244,6 +244,50 @@ The same format can also be set from the CopyQ scripting API::
 The environment variable takes precedence over the ``config`` option. If both
 are set, the environment variable value is used.
 
+Which clipboard formats are stored?
+-----------------------------------
+
+By default (option ``store_all_clipboard_formats``), CopyQ stores every format
+the clipboard offers, application-private ones included, so pasting an item
+puts back everything the source app copied. It skips only CopyQ's own
+``application/x-copyq-*`` formats and X11 protocol targets (``TARGETS``,
+``MULTIPLE``, ``TIMESTAMP``, ``SAVE_TARGETS``, ``DELETE`` and the X11 text
+encodings). To store only the formats used by the enabled item plugins::
+
+    copyq config store_all_clipboard_formats false
+
+The formats stored from one copy are limited by ``clipboard_item_size_limit``
+(default ``64M``, ``K``/``M``/``G`` suffixes, ``-1`` for no limit). Over the
+limit, the largest formats are dropped first; ``text/plain`` is always kept::
+
+    copyq config clipboard_item_size_limit 16M
+
+Each item copied from the clipboard records when it was copied, in
+``application/x-copyq-private-copied-at`` (milliseconds since epoch).
+
+An item without text is shown by a label describing its data, as Flycut does,
+for example ``[image: PNG, 1920×1080, 1.2 MB]``, ``[PDF: 3 pages, 120 KB]``,
+``[file: notes.txt]`` or ``[object: application/x-foo, 12 bytes]``.
+
+How to limit disk space used by images and other binary data?
+-------------------------------------------------------------
+
+The ``binary_data_limit`` option (default ``512M``, ``-1`` for no limit) caps
+the binary data (any format except ``text/*``) kept by each tab. When a tab
+holds more, CopyQ drops the binary formats of bulky old items, not the items:
+they keep their text, and an item without text keeps its label. Items are
+scored ``bytes × (1 + age in days / 30)`` and the highest scores go first until
+the tab holds less than 90% of the limit. The 20 newest items, items copied in
+the last 24 hours and pinned items are never touched::
+
+    copyq config binary_data_limit 2G
+
+An item that lost data this way carries ``application/x-copyq-evicted-formats``:
+JSON with its label and, for each dropped format, its name, size and SHA-256.
+
+The clipboard tab keeps up to 5000 items by default (option ``maxitems``) and
+items don't expire by default (option ``expire_tab``).
+
 How to preserve the order of copied items when copying or pasting multiple items?
 ---------------------------------------------------------------------------------
 
@@ -562,7 +606,7 @@ See :js:func:`stats` API documentation for details.
 
 Options to reduce memory usage:
 
-- Reduce maximum items per tab — the default is 200. Lower it in
+- Reduce maximum items per tab — the default is 5000. Lower it in
   Preferences in the History section.
 - Enable "Unload tab after an interval" in the History section in Preferences.
   Tabs that have not been accessed recently will be unloaded automatically.

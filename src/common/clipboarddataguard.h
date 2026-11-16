@@ -9,6 +9,15 @@ class QMimeData;
 class QImage;
 class QUrl;
 
+/**
+ * Parses a byte size like "100", "500K", "64M" or "1G" (1024-based).
+ * Empty or negative means no limit (-1 or the negative value).
+ */
+qint64 parseByteSize(const QString &str, bool *ok);
+
+/// Maximum total size of the formats stored from one clipboard change, -1 for no limit.
+qint64 clipboardItemSizeLimit();
+
 // Avoids accessing old clipboard/drag'n'drop data.
 class ClipboardDataGuard final {
 public:

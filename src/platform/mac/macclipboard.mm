@@ -80,7 +80,8 @@ void MacClipboard::setData(ClipboardMode mode, const QVariantMap &dataMap)
 
 bool MacClipboard::isHidden(const QMimeData &data) const
 {
-    return data.hasFormat( QStringLiteral("application/x-nspasteboard-concealed-type") );
+    return data.hasFormat( QStringLiteral("application/x-nspasteboard-concealed-type") )
+        || DummyClipboard::isHidden(data);
 }
 
 void MacClipboard::onChanged(int mode)

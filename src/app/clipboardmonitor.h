@@ -9,6 +9,7 @@
 #include "platform/platformclipboard.h"
 #include "platform/platformnativeinterface.h"
 
+#include <QSet>
 #include <QVariantMap>
 
 class ClipboardMonitor final : public QObject
@@ -44,6 +45,7 @@ private:
 
     QString m_clipboardTab;
     bool m_storeClipboard;
+    QSet<int> m_suspiciousLengths;
 
     ClipboardOwnerMonitor m_ownerMonitor;
 

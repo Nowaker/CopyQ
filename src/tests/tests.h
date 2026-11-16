@@ -357,6 +357,11 @@ private slots:
     void clipboardUriList();
     void clipboardMimeSizeLimit();
     void clipboardMimeSizeLimitConfig();
+    void clipboardAllFormats();
+    void clipboardItemSizeLimit();
+    void clipboardSkipFormats();
+    void clipboardSkipSuspiciousLengths();
+    void evictBinaryData();
 
     void handleUnexpectedTypes();
 

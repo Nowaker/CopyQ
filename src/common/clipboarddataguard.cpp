@@ -43,41 +43,6 @@ QRegularExpression anchoredMimePattern(const QString &pattern)
     return QRegularExpression(QRegularExpression::anchoredPattern(pattern));
 }
 
-qint64 parseByteSize(const QString &str, bool *ok)
-{
-    const auto s = QStringView(str).trimmed();
-    if (s.isEmpty()) {
-        // Empty size (e.g. "text/plain:") means no limit.
-        *ok = true;
-        return -1;
-    }
-
-    const QChar last = s.last();
-    qint64 multiplier = 1;
-    QStringView num = s;
-
-    if (last.toUpper() == QLatin1Char('K')) {
-        multiplier = 1024LL;
-        num = s.chopped(1);
-    } else if (last.toUpper() == QLatin1Char('M')) {
-        multiplier = 1024LL * 1024;
-        num = s.chopped(1);
-    } else if (last.toUpper() == QLatin1Char('G')) {
-        multiplier = 1024LL * 1024 * 1024;
-        num = s.chopped(1);
-    }
-
-    const qint64 value = num.toLongLong(ok);
-    if (!*ok)
-        return 0;
-    // Negative means "no limit", consistent with maxBytesForMime() returning -1.
-    if (value < 0)
-        return value;
-    if (multiplier > 1 && value > std::numeric_limits<qint64>::max() / multiplier)
-        return -1; // overflow → treat as no limit
-    return value * multiplier;
-}
-
 QList<MimeSizeRule> mimeSizeRules()
 {
     QList<MimeSizeRule> result;
@@ -162,6 +127,60 @@ private:
 };
 
 } //namespace
+
+qint64 parseByteSize(const QString &str, bool *ok)
+{
+    const auto s = QStringView(str).trimmed();
+    if (s.isEmpty()) {
+        // Empty size (e.g. "text/plain:") means no limit.
+        *ok = true;
+        return -1;
+    }
+
+    const QChar last = s.last();
+    qint64 multiplier = 1;
+    QStringView num = s;
+
+    if (last.toUpper() == QLatin1Char('K')) {
+        multiplier = 1024LL;
+        num = s.chopped(1);
+    } else if (last.toUpper() == QLatin1Char('M')) {
+        multiplier = 1024LL * 1024;
+        num = s.chopped(1);
+    } else if (last.toUpper() == QLatin1Char('G')) {
+        multiplier = 1024LL * 1024 * 1024;
+        num = s.chopped(1);
+    }
+
+    const qint64 value = num.toLongLong(ok);
+    if (!*ok)
+        return 0;
+    // Negative means "no limit", consistent with maxBytesForMime() returning -1.
+    if (value < 0)
+        return value;
+    if (multiplier > 1 && value > std::numeric_limits<qint64>::max() / multiplier)
+        return -1; // overflow → treat as no limit
+    return value * multiplier;
+}
+
+qint64 clipboardItemSizeLimit()
+{
+    static int cachedGeneration = -1;
+    static qint64 limit = -1;
+
+    const int generation = qApp ? qApp->property("CopyQ_config_generation").toInt() : 0;
+    if (generation != cachedGeneration) {
+        cachedGeneration = generation;
+        const QString spec = AppConfig().option<Config::clipboard_item_size_limit>();
+        bool ok = false;
+        limit = parseByteSize(spec, &ok);
+        if (!ok) {
+            limit = parseByteSize(Config::clipboard_item_size_limit::defaultValue(), &ok);
+            log(QStringLiteral("clipboard_item_size_limit: invalid value \"%1\", using default").arg(spec), LogWarning);
+        }
+    }
+    return limit;
+}
 
 ClipboardDataGuard::ClipboardDataGuard(const QMimeData *data, const long int *clipboardSequenceNumber)
     : m_data(data)

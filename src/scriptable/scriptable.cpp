@@ -2361,7 +2361,7 @@ QJSValue Scriptable::hasData()
 {
     for (auto it = m_data.constBegin(); it != m_data.constEnd(); ++it) {
         const auto &format = it.key();
-        if ( isInternalDataFormat(format) )
+        if ( isInternalDataFormat(format) || format == mimeCopiedAt )
             continue;
 
         auto bytes = it.value().toByteArray();

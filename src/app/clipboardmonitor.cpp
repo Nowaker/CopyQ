@@ -12,6 +12,8 @@
 
 #include <QApplication>
 #include <QClipboard>
+#include <QDateTime>
+#include <QSet>
 
 namespace {
 
@@ -45,6 +47,46 @@ bool isClipboardDataSecret(const QVariantMap &data)
     return data.value(mimeSecret).toByteArray() == "1";
 }
 
+QSet<int> suspiciousLengths(const AppConfig &config)
+{
+    QSet<int> lengths;
+    if ( !config.option<Config::clipboard_skip_suspicious_lengths>() )
+        return lengths;
+
+    for (const auto &length : config.option<Config::clipboard_suspicious_lengths>().split(QLatin1Char(','))) {
+        bool ok = false;
+        const int value = length.trimmed().toInt(&ok);
+        if (ok && value > 0)
+            lengths.insert(value);
+    }
+    return lengths;
+}
+
+/// A single word of a listed length mixing upper and lower case, digits and symbols: a likely password.
+bool isSuspiciousText(const QString &text, const QSet<int> &lengths)
+{
+    if ( !lengths.contains(text.size()) )
+        return false;
+
+    bool hasUpper = false;
+    bool hasLower = false;
+    bool hasDigit = false;
+    bool hasSymbol = false;
+    for (const QChar c : text) {
+        if ( c.isSpace() )
+            return false;
+        if ( c.isUpper() )
+            hasUpper = true;
+        else if ( c.isLower() )
+            hasLower = true;
+        else if ( c.isDigit() )
+            hasDigit = true;
+        else if ( !c.isLetter() )
+            hasSymbol = true;
+    }
+    return hasUpper && hasLower && hasDigit && hasSymbol;
+}
+
 } // namespace
 
 ClipboardMonitor::ClipboardMonitor(const QStringList &formats)
@@ -54,12 +96,15 @@ ClipboardMonitor::ClipboardMonitor(const QStringList &formats)
 {
     const AppConfig config;
     m_storeClipboard = config.option<Config::check_clipboard>();
+    m_suspiciousLengths = suspiciousLengths(config);
     m_clipboardTab = config.option<Config::clipboard_tab>();
 
     const int ownerUpdateInterval = config.option<Config::update_clipboard_owner_delay_ms>();
     m_ownerMonitor.setUpdateInterval(std::max(ownerUpdateInterval, 0));
 
     m_formats.append({mimeOwner, mimeWindowTitle, mimeItemNotes, mimeHidden, mimeSecret});
+    if ( config.option<Config::store_all_clipboard_formats>() )
+        m_formats.append(mimeAllClipboardFormats);
     m_formats.removeDuplicates();
 
     m_modes = ClipboardModeFlag::Clipboard;
@@ -152,6 +197,13 @@ void ClipboardMonitor::onClipboardChanged(ClipboardMode mode)
     if (isDataUnchanged) {
         emit clipboardUnchanged(data);
         return;
+    }
+
+    data.insert(mimeCopiedAt, QByteArray::number(QDateTime::currentMSecsSinceEpoch()));
+
+    if ( !m_suspiciousLengths.isEmpty() && isSuspiciousText(getTextData(data), m_suspiciousLengths) ) {
+        COPYQ_LOG("Clipboard text looks like a password, treating it as secret");
+        data.insert(mimeSecret, QByteArrayLiteral("1"));
     }
 
 #ifdef HAS_MOUSE_SELECTIONS

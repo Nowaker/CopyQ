@@ -23,6 +23,7 @@
 #include <QObject>
 #include <QProcess>
 #include <QRegularExpression>
+#include <QSet>
 #include <QThread>
 #include <QUrl>
 
@@ -155,6 +156,60 @@ bool isBinaryImageFormat(const QString &format)
            && !format.contains(QStringLiteral("svg"));
 }
 
+/**
+ * Formats not stored even when storing every clipboard format: CopyQ's own,
+ * X11 selection protocol targets, and X11 text encodings Qt derives from text/plain.
+ */
+bool isIgnoredClipboardFormat(const QString &format)
+{
+    static const QSet<QString> ignoredFormats{
+        QStringLiteral("TARGETS"),
+        QStringLiteral("MULTIPLE"),
+        QStringLiteral("TIMESTAMP"),
+        QStringLiteral("SAVE_TARGETS"),
+        QStringLiteral("DELETE"),
+        QStringLiteral("STRING"),
+        QStringLiteral("UTF8_STRING"),
+        QStringLiteral("TEXT"),
+        QStringLiteral("COMPOUND_TEXT"),
+        // Qt's in-memory image, derived from the offered image formats.
+        QStringLiteral("application/x-qt-image"),
+    };
+    return format.isEmpty()
+        || format.startsWith(QLatin1String(COPYQ_MIME_PREFIX))
+        || ignoredFormats.contains(format);
+}
+
+/// Drops the largest formats, never text/plain, until the total size fits the limit.
+void limitDataSize(QVariantMap *data, qint64 maxBytes)
+{
+    if (maxBytes < 0)
+        return;
+
+    qint64 totalBytes = 0;
+    for (auto it = data->constBegin(); it != data->constEnd(); ++it)
+        totalBytes += it.value().toByteArray().size();
+
+    while (totalBytes > maxBytes) {
+        QString largestFormat;
+        qint64 largestBytes = 0;
+        for (auto it = data->constBegin(); it != data->constEnd(); ++it) {
+            const qint64 bytes = it.value().toByteArray().size();
+            if ( it.key() != mimeText && !it.key().startsWith(QLatin1String(COPYQ_MIME_PREFIX)) && bytes > largestBytes ) {
+                largestFormat = it.key();
+                largestBytes = bytes;
+            }
+        }
+        if ( largestFormat.isEmpty() )
+            return;
+
+        log( QStringLiteral("Dropping clipboard format %1 (%2 bytes) to fit the item size limit (%3 bytes)")
+             .arg(largestFormat).arg(largestBytes).arg(maxBytes), LogNote );
+        data->remove(largestFormat);
+        totalBytes -= largestBytes;
+    }
+}
+
 } // namespace
 
 QVariantMap cloneData(ClipboardDataGuard &data, const QStringList &formats)
@@ -172,11 +227,24 @@ QVariantMap cloneData(ClipboardDataGuard &data, const QStringList &formats)
      */
     const bool skipBinaryImageFormats = formats.contains(mimeText) && data.hasText();
 
+    // With mimeAllClipboardFormats, every offered format is stored as the source app
+    // provides it, so offered images are copied as they are rather than converted.
+    const bool allFormats = formats.contains(mimeAllClipboardFormats);
+    const QStringList offeredFormats = allFormats ? data.formats() : QStringList();
+
     QStringList imageFormats;
     for (const auto &mime : formats) {
+        if (mime == mimeAllClipboardFormats)
+            continue;
+
         if (isBinaryImageFormat(mime)) {
-            if (!skipBinaryImageFormats)
+            if ( offeredFormats.contains(mime) ) {
+                const QByteArray bytes = data.data(mime);
+                if ( !bytes.isEmpty() )
+                    newdata.insert(mime, bytes);
+            } else if (!skipBinaryImageFormats) {
                 imageFormats.append(mime);
+            }
         } else {
             const QByteArray bytes = data.getUtf8Data(mime);
             if ( bytes.isEmpty() )
@@ -192,9 +260,30 @@ QVariantMap cloneData(ClipboardDataGuard &data, const QStringList &formats)
         if ( canCloneImageData(image) ) {
             for (const auto &mime : imageFormats) {
                 const QString format = getImageFormatFromMime(mime);
-                if ( !format.isEmpty() )
+                if ( !format.isEmpty() && !newdata.contains(mime) )
                     cloneImageData(image, format, mime, &newdata);
             }
+        }
+    }
+
+    /*
+     Image sources usually offer the same image in every format the toolkit can
+     encode (Qt offers image/eps, image/tiff, image/jpeg... for one copied image),
+     each encoded on request, which is slow and redundant. Only one image is kept:
+     the formats item plugins know, else the first offered one.
+     */
+    bool hasImage = std::any_of(newdata.keyBegin(), newdata.keyEnd(), isBinaryImageFormat);
+    for (const auto &mime : offeredFormats) {
+        if ( newdata.contains(mime) || formats.contains(mime) || isIgnoredClipboardFormat(mime) )
+            continue;
+        const bool isImage = isBinaryImageFormat(mime);
+        if (isImage && hasImage)
+            continue;
+        // Kept as offered, not converted to UTF-8, so pasting puts back exactly what was copied.
+        const QByteArray bytes = data.data(mime);
+        if ( !bytes.isEmpty() ) {
+            newdata.insert(mime, bytes);
+            hasImage = hasImage || isImage;
         }
     }
 
@@ -204,6 +293,8 @@ QVariantMap cloneData(ClipboardDataGuard &data, const QStringList &formats)
     // Drop duplicate UTF-8 text format.
     if ( newdata.contains(mimeTextUtf8) && newdata[mimeTextUtf8] == newdata.value(mimeText) )
         newdata.remove(mimeTextUtf8);
+
+    limitDataSize(&newdata, clipboardItemSizeLimit());
 
     return newdata;
 }

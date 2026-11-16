@@ -20,6 +20,7 @@ class PasswordPrompt;
 struct ClipboardBrowserShared {
     QString editor;
     int maxItems = 100;
+    qint64 binaryDataLimit = -1;
     bool textWrap = true;
     NavigationStyle navigationStyle = NavigationStyle::Default;
     bool saveOnReturnKey = false;

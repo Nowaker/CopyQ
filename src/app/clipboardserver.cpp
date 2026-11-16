@@ -5,6 +5,7 @@
 #include "common/action.h"
 #include "common/appconfig.h"
 #include "common/clientsocket.h"
+#include "common/clipboarddataguard.h"
 #include "common/client_server.h"
 #include "common/commandstatus.h"
 #include "common/config.h"
@@ -818,6 +819,15 @@ void ClipboardServer::loadSettings(AppConfig *appConfig)
 
     m_sharedData->editor = appConfig->option<Config::editor>();
     m_sharedData->maxItems = appConfig->option<Config::maxitems>();
+    {
+        const QString limit = appConfig->option<Config::binary_data_limit>();
+        bool ok = false;
+        m_sharedData->binaryDataLimit = parseByteSize(limit, &ok);
+        if (!ok) {
+            log( QStringLiteral("binary_data_limit: invalid value \"%1\", using default").arg(limit), LogWarning );
+            m_sharedData->binaryDataLimit = parseByteSize(Config::binary_data_limit::defaultValue(), &ok);
+        }
+    }
     m_sharedData->textWrap = appConfig->option<Config::text_wrap>();
     m_sharedData->navigationStyle = appConfig->option<Config::navigation_style>();
     m_sharedData->saveOnReturnKey = !appConfig->option<Config::edit_ctrl_return>();

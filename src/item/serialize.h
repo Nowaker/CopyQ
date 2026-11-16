@@ -6,6 +6,8 @@
 #include <QtContainerFwd>
 
 class QAbstractItemModel;
+class QDateTime;
+class QVariant;
 class QDataStream;
 class QIODevice;
 
@@ -31,3 +33,9 @@ bool deserializeData(QAbstractItemModel *model, QIODevice *file, const Encryptio
 bool itemDataFiles(QIODevice *file, QStringList *files, const Encryption::EncryptionKey *encryptionKey = nullptr);
 
 qint64 estimateDataSize(const QVariantMap &data);
+
+/// Size of an item data value, without loading data kept in a data file.
+qint64 itemDataSize(const QVariant &value);
+
+/// When an item data value was written to its data file; invalid for data not kept in a file.
+QDateTime itemDataSavedTime(const QVariant &value);
