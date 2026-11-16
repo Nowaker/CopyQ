@@ -124,7 +124,7 @@ dark and light backgrounds) and ``label_fg=num_fg`` (as muted as row numbers).
 Selected items use ``sel_fg``. In ``items.css`` the item widgets have the
 ``CopyQ_credential`` and ``CopyQ_label`` properties:
 
-.. code-block:: css
+.. code-block:: none
 
     #item[CopyQ_credential="true"] { color: ${credential_fg} }
 
