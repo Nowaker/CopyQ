@@ -161,6 +161,7 @@ private slots:
 
     void credentialRule();
     void windowTitleDescribesData();
+    void keepFormattingOfMarkdownAndSlackCopies();
 
     void pipingCommands();
 

@@ -73,6 +73,109 @@ overrideFunction('provideSelection');
     )";
     c->isScript = true;
 
+    // The conversion is `clipboard-markdown enrich` (dotfiles, on opencode-tools' _lib/rich-clipboard),
+    // the same one Flycut ports to Objective-C, so a copy is enriched the same way on Linux and the Mac.
+    // Its marker in the web custom data keeps either side from enriching a copy twice.
+    c = newCommand(&commands);
+    c->name = AddCommandDialog::tr("Keep formatting of Markdown and Slack copies");
+    c->icon = fromIconId(IconMarkdown);
+    c->cmd  = R"(// Adds HTML and Slack's rich-text format to a Markdown copy (its plain text stays the Markdown),
+// and laid-out text and HTML to a copy out of Slack, so pasting keeps lists, bold and links.
+// Needs `clipboard-markdown` on PATH or in ~/bin.
+const richWebCustomData = 'chromium/x-web-custom-data';
+const richMarkdown = 'text/markdown';
+
+function richFormatsRun(request) {
+    for (const command of ['clipboard-markdown', str(env('HOME')) + '/bin/clipboard-markdown']) {
+        let result;
+        try {
+            result = execute(command, 'enrich', null, request);
+        } catch (e) {
+            continue;
+        }
+        if (!result)
+            continue;
+        if (result.exit_code !== 0) {
+            serverLog('clipboard-markdown enrich exited with ' + result.exit_code);
+            return null;
+        }
+        return JSON.parse(str(result.stdout));
+    }
+    serverLog('clipboard-markdown not found');
+    return null;
+}
+
+// Starting the converter for every copy would be slow, so only copies that may need it ask.
+function richFormatsEnrichment() {
+    if (!isClipboard())
+        return null;
+    const formats = dataFormats();
+    if (formats.some(format => /^image\/|^video\/|^audio\/|^text\/uri-list$/.test(format)))
+        return null;
+    const text = formats.includes(mimeText) ? str(data(mimeText)) : '';
+    const html = formats.includes(mimeHtml) ? str(data(mimeHtml)) : '';
+    const hasCustomData = formats.includes(richWebCustomData);
+    const hasMarkdown = formats.includes(richMarkdown);
+    const mayBeMarkdown = text.trim().includes('\n') && /[*_~`#>|]|\]\(|^\s*([-+*]|\d+[.)])\s/m.test(text);
+    if (!hasCustomData && !hasMarkdown && !html.includes('data-stringify-type') && !mayBeMarkdown)
+        return null;
+    if (text && typeof credentialRule === 'function' && credentialRule(text))
+        return null;
+    const request = {};
+    if (text)
+        request.text = text;
+    if (html)
+        request.html = html;
+    if (hasMarkdown)
+        request.markdown = str(data(richMarkdown));
+    if (hasCustomData)
+        request.webCustomData = toBase64(data(richWebCustomData));
+    const enrichment = richFormatsRun(JSON.stringify(request));
+    return enrichment && enrichment.kind ? enrichment : null;
+}
+
+const richFormatsOnClipboardChanged = global.onClipboardChanged;
+global.onClipboardChanged = function() {
+    let enrichment = null;
+    try {
+        enrichment = richFormatsEnrichment();
+    } catch (e) {
+        serverLog('Keeping formatting failed: ' + e);
+    }
+    const copied = enrichment ? str(data(mimeText)) : '';
+    if (enrichment) {
+        setData(mimeText, enrichment.text);
+        setData(mimeHtml, enrichment.html);
+        setData(richWebCustomData, fromBase64(enrichment.webCustomData));
+    }
+    richFormatsOnClipboardChanged();
+    // The new formats go on the clipboard too, unless something else was copied meanwhile.
+    if (!enrichment || !hasData() || str(clipboard()) !== copied)
+        return;
+    const item = {};
+    for (const format of dataFormats()) {
+        if (!format.startsWith('application/x-copyq-'))
+            item[format] = data(format);
+    }
+    try {
+        copy(item);
+    } catch (e) {
+        serverLog('Keeping formatting failed to set the clipboard: ' + e);
+    }
+};
+
+const richFormatsToSave = global.clipboardFormatsToSave;
+global.clipboardFormatsToSave = function() {
+    const formats = richFormatsToSave();
+    for (const format of [richWebCustomData, richMarkdown]) {
+        if (!formats.includes(format))
+            formats.push(format);
+    }
+    return formats;
+};
+    )";
+    c->isScript = true;
+
     c = newCommand(&commands);
     c->name = AddCommandDialog::tr("Open in &Browser");
     c->re   = reURL;
