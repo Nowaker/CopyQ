@@ -17,6 +17,7 @@ void addDocumentation(AddDocumentationCallback addDocumentation)
     addDocumentation("toggle", "toggle() -> bool", "Shows or hides main window.");
     addDocumentation("menu", "menu()", "Opens context menu.");
     addDocumentation("menu", "menu(tabName, [maxItemCount, [x, y]])", "Shows context menu for given tab.");
+    addDocumentation("searchPopup", "searchPopup() -> bool", "Shows the search popup under the mouse cursor, or closes it if it's open.");
     addDocumentation("exit", "exit()", "Exits server.");
     addDocumentation("disable", "disable()", "Disables or enables clipboard content storing.");
     addDocumentation("monitoring", "monitoring() -> bool", "Returns true only if clipboard storing is enabled.");

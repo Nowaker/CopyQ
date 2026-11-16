@@ -1233,6 +1233,12 @@ bool ScriptableProxy::toggleCurrentMenu()
     return m_wnd->toggleMenu();
 }
 
+bool ScriptableProxy::toggleSearchPopup()
+{
+    INVOKE(toggleSearchPopup, ());
+    return m_wnd->toggleSearchPopup();
+}
+
 int ScriptableProxy::findTabIndex(const QString &arg1)
 {
     INVOKE(findTabIndex, (arg1));

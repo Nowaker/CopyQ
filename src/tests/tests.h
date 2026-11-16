@@ -163,6 +163,10 @@ private slots:
     void windowTitleDescribesData();
     void keepFormattingOfMarkdownAndSlackCopies();
 
+    void searchPopupFiltersAndPastes();
+    void searchPopupKeys();
+    void searchPopupSearchesArchive();
+
     void pipingCommands();
 
     void chainingCommands();

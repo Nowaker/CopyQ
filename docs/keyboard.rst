@@ -54,6 +54,7 @@ tab, you can use predefined ones:
 
 1. Open "File - Commands/Global Shortcuts...".
 2. Click "Add" button.
-3. Select command (e.g. "Show/hide main window").
+3. Select command (e.g. "Show/hide main window", or "Search items in a popup"
+   for a popup that filters items as you type and pastes the chosen one).
 4. Press a shortcut on keyboard.
 5. Click OK to save the dialog.

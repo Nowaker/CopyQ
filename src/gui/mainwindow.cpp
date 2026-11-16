@@ -45,6 +45,7 @@
 #include "gui/notification.h"
 #include "gui/notificationdaemon.h"
 #include "gui/passwordprompt.h"
+#include "gui/searchpopup.h"
 #include "gui/selectiondata.h"
 #include "gui/tabdialog.h"
 #include "gui/tabicons.h"
@@ -2189,6 +2190,14 @@ void MainWindow::addMenuItems(TrayMenu *menu, ClipboardBrowserPlaceholder *place
 
 void MainWindow::activateMenuItem(ClipboardBrowserPlaceholder *placeholder, const QVariantMap &data, bool omitPaste)
 {
+    copyMenuItem(placeholder, data);
+
+    if ( m_options.trayItemPaste && !omitPaste )
+        pasteToWindowForMenuPaste();
+}
+
+void MainWindow::copyMenuItem(ClipboardBrowserPlaceholder *placeholder, const QVariantMap &data)
+{
     if ( m_sharedData->moveItemOnReturnKey ) {
         const auto itemHash = ::hash(data);
         if (placeholder) {
@@ -2202,13 +2211,16 @@ void MainWindow::activateMenuItem(ClipboardBrowserPlaceholder *placeholder, cons
         setClipboard( createDataMap(mimeText, data.value(mimeText) ) );
     else
         setClipboard(data);
+}
 
+void MainWindow::pasteToWindowForMenuPaste()
+{
     if (!m_windowForMenuPaste)
         updateFocusWindows();
 
     PlatformWindowPtr lastWindow = m_windowForMenuPaste;
 
-    if ( m_options.trayItemPaste && !omitPaste && canPaste() ) {
+    if ( canPaste() ) {
         // Raise the target window before paste so that getCurrentWindow()
         // returns it even when the scripted paste() path is taken.  On
         // macOS, closing the menu transitions the app to background, so
@@ -3458,6 +3470,71 @@ bool MainWindow::toggleMenu()
     return toggleMenu(m_trayMenu);
 }
 
+bool MainWindow::toggleSearchPopup()
+{
+    if (!m_searchPopup) {
+        m_searchPopup = new SearchPopup(this);
+        m_searchPopup->setBrowserForTab([this](const QString &tabName) -> ClipboardBrowser* {
+            ClipboardBrowserPlaceholder *placeholder = getPlaceholder(tabName);
+            return placeholder ? placeholder->createBrowser() : nullptr;
+        });
+        connect( m_searchPopup, &SearchPopup::itemActivated,
+                 this, &MainWindow::onSearchPopupItemActivated );
+    }
+
+    if ( !m_searchPopup->isVisible() ) {
+        updateFocusWindows();
+        updateSearchPopupSettings();
+
+        if ( m_flycutSync->isRunning() ) {
+            m_searchPopup->setArchiveSearch(
+                [this](const QString &query, int list, QObject *context, const SearchPopup::ArchiveCallback &callback) {
+                    m_flycutSync->searchArchive(query, list, 0, 0, context,
+                        [callback](const FlycutSyncEngine::SearchResult &result) {
+                            callback({result.matched, result.items, result.error});
+                        });
+                });
+        } else {
+            m_searchPopup->setArchiveSearch(nullptr);
+        }
+    }
+
+    return m_searchPopup->toggle(QCursor::pos());
+}
+
+void MainWindow::onSearchPopupItemActivated(const QVariantMap &data, const QString &tabName, bool paste, bool fromArchive)
+{
+    ClipboardBrowserPlaceholder *placeholder = getPlaceholder(tabName);
+    if (fromArchive && placeholder) {
+        ClipboardBrowser *c = placeholder->createBrowser();
+        if (c)
+            c->addUnique(data, ClipboardMode::Clipboard);
+    }
+
+    copyMenuItem(placeholder, data);
+
+    if (paste)
+        pasteToWindowForMenuPaste();
+}
+
+void MainWindow::updateSearchPopupSettings()
+{
+    const Theme &theme = this->theme();
+    SearchPopup::Style style;
+    style.font = theme.font(QStringLiteral("font"));
+    style.text = theme.color(QStringLiteral("fg"));
+    style.background = theme.color(QStringLiteral("bg"));
+    style.selectedText = theme.color(QStringLiteral("sel_fg"));
+    style.selectedBackground = theme.color(QStringLiteral("sel_bg"));
+    style.credential = theme.color(QStringLiteral("credential_fg"));
+    style.label = theme.color(QStringLiteral("label_fg"));
+    style.muted = theme.color(QStringLiteral("num_fg"));
+    m_searchPopup->setStyle(style);
+
+    // The favorites tab is the one synchronized with Flycut's favorites.
+    m_searchPopup->setTabs( m_options.clipboardTab, AppConfig().option<Config::flycut_sync_favorites_tab>() );
+}
+
 bool MainWindow::toggleMenu(const QString &tabName, int itemCount, QPoint position)
 {
     // Just close the previously opened menu if parameters are the same.
@@ -4144,6 +4221,8 @@ void MainWindow::updateFocusWindows()
         qCDebug(logCategory) << "Focus: tray menu";
     } else if (lastWindow->matchesWidget(m_menu)) {
         qCDebug(logCategory) << "Focus: menu";
+    } else if (m_searchPopup && lastWindow->matchesWidget(m_searchPopup)) {
+        qCDebug(logCategory) << "Focus: search popup";
     } else {
         qCDebug(logCategory) << "Focus:" << lastWindow->getTitle();
         m_windowForMainPaste = lastWindow;

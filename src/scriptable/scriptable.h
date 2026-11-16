@@ -166,6 +166,7 @@ public slots:
     void hide();
     QJSValue toggle();
     QJSValue menu();
+    QJSValue searchPopup();
     void exit();
     void disable();
     void enable();

@@ -43,6 +43,16 @@ uploaded or inserted twice. Stop the bridge before enabling the sync.
 
 The sync's own state is kept in ``flycut-sync`` in the item data directory.
 
+Archive search
+--------------
+
+When the sync is on, searching in the search popup (:js:func:`searchPopup`,
+global shortcut command "Search items in a popup") lists the local matches
+first and ends with **Search full archive on server…**. Choosing it searches
+the whole server history of the tab's list; clippings found there that this
+machine doesn't hold are listed below it, marked "on server". Choosing one adds
+it to the clipboard tab as a new copy, with all its formats, and pastes it.
+
 Web history
 -----------
 

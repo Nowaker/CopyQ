@@ -202,6 +202,32 @@ unlike in GUI, where row numbers start from 1 by default.
    Optional arguments x, y are coordinates in pixels on screen where menu
    should show up. By default menu shows up under the mouse cursor.
 
+.. js:function:: searchPopup()
+
+   Shows the search popup under the mouse cursor, or closes it if it's open.
+
+   Type to filter items of the clipboard tab: an item matches if it contains
+   every word, ignoring case and diacritics (``zolw`` finds ``żółw``). Rows
+   show the item's first line and where and when it was copied, and the
+   current item is previewed next to the list.
+
+   Keys: ``Enter`` pastes the current item into the window that was active
+   before, ``Ctrl+Enter`` only copies it, ``Ctrl+Backspace`` removes it from
+   the tab, ``Tab`` switches between the clipboard tab and the favorites tab
+   (``config('flycut_sync_favorites_tab')``), the first ``Esc`` clears the
+   search and the second closes the popup.
+
+   When synchronization with Flycut is on, the last row searches the whole
+   archive on the server (see :doc:`flycut-sync`); clippings found there that
+   aren't held locally are listed below it, and choosing one adds it to the
+   clipboard tab.
+
+   The predefined global shortcut command "Search items in a popup" calls
+   this function. It has no shortcut until one is set (e.g. ``ctrl+shift+v``).
+
+   :returns: True only if the popup is shown.
+   :rtype: bool
+
 .. js:function:: exit()
 
    Exits server.

@@ -130,6 +130,32 @@ QVariantMap createDataMap(const QString &format, const QString &value)
     return createDataMap( format, value.toUtf8() );
 }
 
+QString foldedForSearch(const QString &text)
+{
+    const QString decomposed = text.normalized(QString::NormalizationForm_KD);
+    QString result;
+    result.reserve(decomposed.size());
+    for (const QChar c : decomposed) {
+        if (c.category() == QChar::Mark_NonSpacing)
+            continue;
+
+        switch (c.unicode()) {
+        case 0x0141: case 0x0142: result.append(u'l'); break; // Ł ł
+        case 0x00D8: case 0x00F8: result.append(u'o'); break; // Ø ø
+        case 0x0110: case 0x0111: case 0x00D0: case 0x00F0: result.append(u'd'); break; // Đ đ Ð ð
+        case 0x0126: case 0x0127: result.append(u'h'); break; // Ħ ħ
+        case 0x0166: case 0x0167: result.append(u't'); break; // Ŧ ŧ
+        case 0x0131: result.append(u'i'); break; // ı
+        case 0x00DF: case 0x1E9E: result.append(QLatin1String("ss")); break; // ß ẞ
+        case 0x00C6: case 0x00E6: result.append(QLatin1String("ae")); break; // Æ æ
+        case 0x0152: case 0x0153: result.append(QLatin1String("oe")); break; // Œ œ
+        case 0x00DE: case 0x00FE: result.append(QLatin1String("th")); break; // Þ þ
+        default: result.append(c);
+        }
+    }
+    return result.toCaseFolded();
+}
+
 QString accentsRemoved(const QString &text)
 {
     if (text.isEmpty())

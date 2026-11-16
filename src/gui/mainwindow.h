@@ -33,6 +33,7 @@ class QAction;
 class QMimeData;
 class SystemTrayIcon;
 class Tabs;
+class SearchPopup;
 class Theme;
 class TrayMenu;
 class ToolBar;
@@ -182,6 +183,11 @@ public:
      */
     bool toggleMenu();
     bool toggleMenu(const QString &tabName, int itemCount, QPoint position);
+
+    /**
+     * Show/hide the search popup under the mouse pointer. Return true only if it's shown.
+     */
+    bool toggleSearchPopup();
 
     /** Switch between browse and search mode. */
     void enterBrowseMode();
@@ -658,6 +664,10 @@ private:
 
     void addMenuItems(TrayMenu *menu, ClipboardBrowserPlaceholder *placeholder, int maxItemCount, const QString &searchText);
     void activateMenuItem(ClipboardBrowserPlaceholder *placeholder, const QVariantMap &data, bool omitPaste);
+    void copyMenuItem(ClipboardBrowserPlaceholder *placeholder, const QVariantMap &data);
+    void pasteToWindowForMenuPaste();
+    void onSearchPopupItemActivated(const QVariantMap &data, const QString &tabName, bool paste, bool fromArchive);
+    void updateSearchPopupSettings();
     bool toggleMenu(TrayMenu *menu, QPoint pos);
     bool toggleMenu(TrayMenu *menu);
 
@@ -747,6 +757,7 @@ private:
     QVariantMap m_clipboardData;
 
     TrayMenu *m_menu;
+    SearchPopup *m_searchPopup = nullptr;
     QString m_menuTabName;
     int m_menuMaxItemCount;
 

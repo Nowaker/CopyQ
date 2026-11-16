@@ -1948,6 +1948,11 @@ QJSValue Scriptable::dialog()
     return result;
 }
 
+QJSValue Scriptable::searchPopup()
+{
+    return m_proxy->toggleSearchPopup();
+}
+
 QJSValue Scriptable::menuItems()
 {
     const auto text = argument(0);

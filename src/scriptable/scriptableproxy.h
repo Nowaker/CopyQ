@@ -166,6 +166,7 @@ public slots:
     bool toggleVisible();
     bool toggleMenu(const QString &tabName, int maxItemCount, QPoint position);
     bool toggleCurrentMenu();
+    bool toggleSearchPopup();
     int findTabIndex(const QString &arg1);
 
     int menuItems(const VariantMapList &items);

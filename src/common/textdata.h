@@ -37,3 +37,10 @@ QVariantMap createDataMap(const QString &format, const QString &value);
 
 /// Returns text without accents/diacritics.
 QString accentsRemoved(const QString &text);
+
+/**
+ * Returns text folded for case- and diacritic-insensitive search: case folded,
+ * compatibility-decomposed without combining marks, and with letters that have
+ * no decomposition replaced by their base letters (ł → l, ø → o, đ → d, ß → ss).
+ */
+QString foldedForSearch(const QString &text);

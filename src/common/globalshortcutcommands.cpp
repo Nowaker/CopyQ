@@ -63,6 +63,7 @@ QVector<Command> globalShortcutCommands()
     return {
         createGlobalShortcut( AddCommandDialog::tr("Show/hide main window"), "toggle()", IconRectangleList, "copyq_global_toggle"),
         createGlobalShortcut( AddCommandDialog::tr("Show the tray menu"), "menu()", IconInbox, "copyq_global_menu"),
+        createGlobalShortcut( AddCommandDialog::tr("Search items in a popup"), "searchPopup()", IconMagnifyingGlass, "copyq_global_search_popup"),
         createGlobalShortcut( AddCommandDialog::tr("Show main window under mouse cursor"), "visible() ? hide() : showAt()", IconRectangleList, "copyq_global_show_under_mouse"),
         createGlobalShortcut( AddCommandDialog::tr("Edit clipboard"), "edit(-1)", IconPenToSquare, "copyq_global_edit_clipboard"),
         createGlobalShortcut( AddCommandDialog::tr("Edit first item"), "edit(0)", IconPenToSquare, "copyq_global_edit_first_item"),
