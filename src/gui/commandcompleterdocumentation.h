@@ -120,6 +120,7 @@ void addDocumentation(AddDocumentationCallback addDocumentation)
     addDocumentation("sha1sum", "sha1sum(data) -> `ByteArray`", "Returns SHA1 checksum of data.");
     addDocumentation("sha256sum", "sha256sum(data) -> `ByteArray`", "Returns SHA256 checksum of data.");
     addDocumentation("sha512sum", "sha512sum(data) -> `ByteArray`", "Returns SHA512 checksum of data.");
+    addDocumentation("credentialRule", "credentialRule(text) -> string or undefined", "Returns the ID of the credential rule the text matches, or `undefined` if the text does not look like a credential.");
     addDocumentation("open", "open(url, ...) -> bool", "Tries to open URLs in appropriate applications.");
     addDocumentation("execute", "execute(argument, ..., null, stdinData, ...) -> `FinishedCommand`", "Executes a command.");
     addDocumentation("playSound", "playSound(fileOrObject)", "Plays audio file.");

@@ -1090,6 +1090,23 @@ unlike in GUI, where row numbers start from 1 by default.
    :returns: SHA512 checksum of the data.
    :rtype: :js:class:`ByteArray`
 
+.. js:function:: credentialRule(text)
+
+   Returns the ID of the credential rule the text matches, or ``undefined``
+   if the text does not look like a credential.
+
+   The rules are the ones Flycut uses (gitleaks-style patterns for API
+   tokens, private keys and passwords in URLs or assignments). A text that
+   matches none of them is still reported, as ``"standalone"``, if it is a
+   single word that looks random, like a copied password or token.
+
+   Example::
+
+       copyq eval 'credentialRule(clipboard())'
+
+   :returns: Rule ID or ``undefined``.
+   :rtype: string or undefined
+
 .. js:function:: open(url, ...)
 
    Tries to open URLs in appropriate applications.

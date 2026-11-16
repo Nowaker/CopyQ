@@ -159,6 +159,8 @@ private slots:
     void classSettings();
     void calledWithInstance();
 
+    void credentialRule();
+
     void pipingCommands();
 
     void chainingCommands();

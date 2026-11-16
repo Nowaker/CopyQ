@@ -17,6 +17,7 @@
 #include "gui/clipboardspy.h"
 #include "gui/icons.h"
 #include "gui/fromiconid.h"
+#include "item/credentialdetector.h"
 #include "item/itemfactory.h"
 #include "item/serialize.h"
 #include "platform/platformclipboard.h"
@@ -1760,6 +1761,13 @@ QJSValue Scriptable::sha512sum()
 {
     m_skipArguments = 1;
     return checksumForArgument(this, QCryptographicHash::Sha512);
+}
+
+QJSValue Scriptable::credentialRule()
+{
+    m_skipArguments = 1;
+    const QString rule = CredentialDetector::instance().ruleIn( toString(argument(0)) );
+    return rule.isEmpty() ? QJSValue() : QJSValue(rule);
 }
 
 QJSValue Scriptable::open()

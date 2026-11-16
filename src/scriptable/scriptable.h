@@ -300,6 +300,8 @@ public slots:
     QJSValue sha256sum();
     QJSValue sha512sum();
 
+    QJSValue credentialRule();
+
     QJSValue open();
     QJSValue execute();
 

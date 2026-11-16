@@ -8,6 +8,7 @@
         <file alias="images/tab_remove">images/tab_remove.svg</file>
         <file alias="images/logo.png">images/icon_512x512.png</file>
         <file>images/fontawesome.ttf</file>
+        <file alias="credential-rules.json">item/credential-rules.json</file>
         <file alias="knotifications6/copyq.notifyrc">knotifications5/copyq.notifyrc</file>
     </qresource>
 </RCC>
