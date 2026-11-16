@@ -25,6 +25,7 @@ namespace Encryption {
 
 class AppConfig;
 class ConfigTabAppearance;
+class ConfigTabSync;
 class ConfigTabTabs;
 class ItemFactory;
 class ItemOrderList;
@@ -128,6 +129,7 @@ private:
 
     ConfigTabAppearance *m_tabAppearance = nullptr;
     ConfigTabTabs *m_tabTabs = nullptr;
+    ConfigTabSync *m_tabSync = nullptr;
     ItemOrderList *m_tabItems = nullptr;
     ShortcutsWidget *m_tabShortcuts = nullptr;
     std::shared_ptr<Ui::ConfigTabGeneral> m_tabGeneral;

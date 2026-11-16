@@ -4,7 +4,9 @@
 
 #include "platform/platformnativeinterface.h"
 
+#include <QDir>
 #include <QObject>
+#include <QStandardPaths>
 #include <QString>
 
 Config::Config<QString>::Value Config::editor::defaultValue()
@@ -15,6 +17,12 @@ Config::Config<QString>::Value Config::editor::defaultValue()
 Config::Config<bool>::Value Config::autostart::defaultValue()
 {
     return platformNativeInterface()->isAutostartEnabled();
+}
+
+Config::Config<QString>::Value Config::flycut_sync_bridge_state::defaultValue()
+{
+    return QDir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
+        .filePath(QStringLiteral("flycut-copyq-bridge"));
 }
 
 QString defaultClipboardTabName()

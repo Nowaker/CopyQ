@@ -27,6 +27,7 @@ class ClipboardBrowserPlaceholder;
 class CommandAction;
 class CommandDialog;
 class ConfigurationManager;
+class FlycutSync;
 class Notification;
 class QAction;
 class QMimeData;
@@ -289,6 +290,12 @@ public:
 
     /** Close main window and exit the application. */
     void exit();
+
+    /** Sync with Flycut through flycut-sync-server. */
+    FlycutSync *flycutSync() const { return m_flycutSync; }
+
+    /** Open the sync server's web history in the default browser. */
+    void openHistoryInBrowser();
 
     /** Load settings. */
     void loadSettings(QSettings &settings, AppConfig *appConfig);
@@ -761,6 +768,8 @@ private:
     MenuMatchCommands m_itemMenuMatchCommands;
 
     PlatformClipboardPtr m_clipboard;
+
+    FlycutSync *m_flycutSync = nullptr;
 
     bool m_isActiveWindow = false;
     bool m_singleClickActivate = 0;

@@ -121,6 +121,11 @@ void addDocumentation(AddDocumentationCallback addDocumentation)
     addDocumentation("sha256sum", "sha256sum(data) -> `ByteArray`", "Returns SHA256 checksum of data.");
     addDocumentation("sha512sum", "sha512sum(data) -> `ByteArray`", "Returns SHA512 checksum of data.");
     addDocumentation("credentialRule", "credentialRule(text) -> string or undefined", "Returns the ID of the credential rule the text matches, or `undefined` if the text does not look like a credential.");
+    addDocumentation("syncStatus", "syncStatus() -> string", "Returns the status of the sync with Flycut (see :doc:`flycut-sync`).");
+    addDocumentation("syncNow", "syncNow() -> string", "Syncs with Flycut now: applies other machines' changes and uploads this machine's, then returns the status.");
+    addDocumentation("openHistoryInBrowser", "openHistoryInBrowser()", "Opens the sync server's web history in the default browser, signed in.");
+    addDocumentation("syncHistoryLink", "syncHistoryLink() -> string", "Returns a one-time sign-in link to the sync server's web history.");
+    addDocumentation("searchSyncArchive", "searchSyncArchive(query, [list, limit, offset]) -> object", "Searches every machine's history on the sync server.");
     addDocumentation("open", "open(url, ...) -> bool", "Tries to open URLs in appropriate applications.");
     addDocumentation("execute", "execute(argument, ..., null, stdinData, ...) -> `FinishedCommand`", "Executes a command.");
     addDocumentation("playSound", "playSound(fileOrObject)", "Plays audio file.");

@@ -1770,6 +1770,53 @@ QJSValue Scriptable::credentialRule()
     return rule.isEmpty() ? QJSValue() : QJSValue(rule);
 }
 
+QJSValue Scriptable::syncStatus()
+{
+    m_skipArguments = 0;
+    return m_proxy->syncStatus();
+}
+
+QJSValue Scriptable::syncNow()
+{
+    m_skipArguments = 0;
+    return m_proxy->syncNow();
+}
+
+void Scriptable::openHistoryInBrowser()
+{
+    m_skipArguments = 0;
+    m_proxy->openHistoryInBrowser();
+}
+
+QJSValue Scriptable::syncHistoryLink()
+{
+    m_skipArguments = 0;
+    const QVariantMap result = m_proxy->syncHistoryLink();
+    const QString url = result.value(QStringLiteral("url")).toString();
+    if ( url.isEmpty() )
+        return throwError( result.value(QStringLiteral("error")).toString() );
+    return url;
+}
+
+QJSValue Scriptable::searchSyncArchive()
+{
+    m_skipArguments = 4;
+    int list = -1;
+    int limit = 0;
+    int offset = 0;
+    if ( argumentCount() > 1 && !toInt(argument(1), &list) )
+        return throwError(argumentError());
+    if ( argumentCount() > 2 && !toInt(argument(2), &limit) )
+        return throwError(argumentError());
+    if ( argumentCount() > 3 && !toInt(argument(3), &offset) )
+        return throwError(argumentError());
+    QVariantMap result = m_proxy->searchSyncArchive(toString(argument(0)), list, limit, offset);
+    const QString error = result.take(QStringLiteral("error")).toString();
+    if ( !error.isEmpty() )
+        return throwError(error);
+    return toScriptValue(result, m_engine);
+}
+
 QJSValue Scriptable::open()
 {
     m_skipArguments = -1;

@@ -1110,6 +1110,49 @@ unlike in GUI, where row numbers start from 1 by default.
    :returns: Rule ID or ``undefined``.
    :rtype: string or undefined
 
+.. js:function:: syncStatus()
+
+   Returns the status of the sync with Flycut (see :doc:`flycut-sync`).
+
+   :returns: Status, e.g. "Synced as desktop-copyq-1a2b3c4d with 2 other machines".
+   :rtype: string
+
+.. js:function:: syncNow()
+
+   Syncs with Flycut now: applies other machines' changes and uploads this
+   machine's, then returns the status.
+
+   :returns: Status after the sync.
+   :rtype: string
+
+.. js:function:: openHistoryInBrowser()
+
+   Opens the sync server's web history in the default browser, signed in.
+
+.. js:function:: syncHistoryLink()
+
+   Returns a one-time sign-in link to the sync server's web history.
+
+   Throws an error if the sync is not running or the server refuses.
+
+   :returns: Link valid for two minutes.
+   :rtype: string
+
+.. js:function:: searchSyncArchive(query, [list, limit, offset])
+
+   Searches every machine's history on the sync server.
+
+   ``list`` is 0 for the history, 1 for favorites, -1 (default) for both;
+   ``limit`` defaults to the server's (50, at most 200).
+
+   Example::
+
+       copyq eval 'r = searchSyncArchive("invoice"); r.items.forEach(function(item) { print(str(item[mimeText]) + "\\n") })'
+
+   :returns: Object with ``matched`` (number of matching clippings) and
+             ``items`` (item data, sealed credentials opened).
+   :rtype: object
+
 .. js:function:: open(url, ...)
 
    Tries to open URLs in appropriate applications.

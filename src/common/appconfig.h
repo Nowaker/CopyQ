@@ -63,6 +63,45 @@ struct clipboard_tab : Config<QString> {
     static Value defaultValue() { return defaultClipboardTabName(); }
 };
 
+struct flycut_sync : Config<bool> {
+    static QString name() { return QStringLiteral("flycut_sync"); }
+    static const char *description() {
+        return "Sync the clipboard tab and the favorites tab with Flycut through flycut-sync-server";
+    }
+};
+
+struct flycut_sync_server : Config<QString> {
+    static QString name() { return QStringLiteral("flycut_sync_server"); }
+    static const char *description() {
+        return "Address of flycut-sync-server, e.g. https://flycut.example.ts.net"
+               " (the token is kept in the system keychain)";
+    }
+};
+
+struct flycut_sync_favorites_tab : Config<QString> {
+    static QString name() { return QStringLiteral("flycut_sync_favorites_tab"); }
+    static Value defaultValue() { return QStringLiteral("Favorites"); }
+    static const char *description() {
+        return "Tab synced with Flycut's favorites";
+    }
+};
+
+struct flycut_sync_token_file : Config<QString> {
+    static QString name() { return QStringLiteral("flycut_sync_token_file"); }
+    static const char *description() {
+        return "File with the flycut-sync-server token, used instead of the system keychain if set";
+    }
+};
+
+struct flycut_sync_bridge_state : Config<QString> {
+    static QString name() { return QStringLiteral("flycut_sync_bridge_state"); }
+    static Value defaultValue();
+    static const char *description() {
+        return "State directory of flycut-copyq-bridge, whose machine id and history"
+               " the sync takes over on its first start";
+    }
+};
+
 struct expire_tab : Config<int> {
     static QString name() { return QStringLiteral("expire_tab"); }
 };

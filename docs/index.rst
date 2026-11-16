@@ -33,6 +33,7 @@ advanced topics like scripting and application development process.
     pin-items
     password-protection
     synchronize
+    flycut-sync
     writing-commands-and-adding-functionality
     scripting
     command-examples

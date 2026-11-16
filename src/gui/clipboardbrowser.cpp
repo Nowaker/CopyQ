@@ -720,6 +720,7 @@ void ClipboardBrowser::removeIndexes(const QModelIndexList &indexes, QString *er
         return;
 
     m_itemSaver->itemsRemovedByUser(toRemove);
+    emit itemsRemovedByUser(toRemove);
 
     dropIndexes(toRemove);
 }

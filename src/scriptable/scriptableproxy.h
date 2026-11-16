@@ -121,6 +121,12 @@ public slots:
     bool isMonitoringEnabled();
     bool isMainWindowVisible();
     bool isMainWindowFocused();
+
+    QString syncStatus();
+    QString syncNow();
+    void openHistoryInBrowser();
+    QVariantMap syncHistoryLink();
+    QVariantMap searchSyncArchive(const QString &query, int list, int limit, int offset);
     bool preview(const QVariant &arg);
     void disableMonitoring(bool arg1);
     void setClipboard(const QVariantMap &data, ClipboardMode mode);

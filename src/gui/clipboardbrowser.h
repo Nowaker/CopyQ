@@ -222,6 +222,9 @@ class ClipboardBrowser final : public QListView
     signals:
         void runOnRemoveItemsHandler(const QList<QPersistentModelIndex> &indexes, bool *canRemove);
 
+        /// Items the user (or a script) is about to remove, unlike items dropped by the item limit.
+        void itemsRemovedByUser(const QList<QPersistentModelIndex> &indexes);
+
         /** Show list request. */
         void requestShow(const ClipboardBrowser *self);
         /** Request clipboard change. */

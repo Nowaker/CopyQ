@@ -59,6 +59,8 @@ MenuItems menuItems()
                   QStringLiteral("toggle_clipboard_storing"), QObject::tr("Ctrl+Shift+X"), QStringLiteral(""), IconBan );
     addMenuItem( items, Actions::File_ProcessManager, QObject::tr("P&rocess Manager"),
                   QStringLiteral("process_manager"), QObject::tr("Ctrl+Shift+Z"), QStringLiteral("system-search"), IconGears );
+    addMenuItem( items, Actions::File_OpenHistoryInBrowser, QObject::tr("Open &History in Browser"),
+                  QStringLiteral("open_history_in_browser"), QString(), QStringLiteral("web-browser"), IconGlobe );
     addMenuItem( items, Actions::File_Exit, QObject::tr("E&xit"), QStringLiteral("exit"), QObject::tr("Ctrl+Q"),
                   QStringLiteral("application-exit"), IconPowerOff );
 

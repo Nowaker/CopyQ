@@ -302,6 +302,12 @@ public slots:
 
     QJSValue credentialRule();
 
+    QJSValue syncStatus();
+    QJSValue syncNow();
+    void openHistoryInBrowser();
+    QJSValue syncHistoryLink();
+    QJSValue searchSyncArchive();
+
     QJSValue open();
     QJSValue execute();
 

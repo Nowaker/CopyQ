@@ -21,6 +21,7 @@ enum Id {
     File_ShowPreview,
     File_ToggleClipboardStoring,
     File_ProcessManager,
+    File_OpenHistoryInBrowser,
     File_Exit,
 
     Edit_SortSelectedItems,

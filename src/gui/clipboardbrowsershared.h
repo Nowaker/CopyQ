@@ -12,6 +12,7 @@
 #include <memory>
 
 class ActionHandler;
+class FlycutSync;
 class ItemFactory;
 class NotificationDaemon;
 class PasswordPrompt;
@@ -38,6 +39,7 @@ struct ClipboardBrowserShared {
     ActionHandler *actions = nullptr;
     NotificationDaemon *notifications = nullptr;
     PasswordPrompt *passwordPrompt = nullptr;
+    FlycutSync *flycutSync = nullptr;
     Theme theme;
     MenuItems menuItems;
     Encryption::EncryptionKey encryptionKey;

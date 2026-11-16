@@ -127,7 +127,7 @@ target_sources(copyq-common PRIVATE ${copyq_SOURCES})
 add_dependencies(copyq-common generate_version_file)
 
 # Qt modules
-list(APPEND copyq_qt_modules Network Svg Xml Qml)
+list(APPEND copyq_qt_modules Network Sql Svg Xml Qml)
 foreach (copyq_qt_module ${copyq_qt_modules})
     find_package(${copyq_qt}${copyq_qt_module} REQUIRED)
     list(APPEND copyq_LIBRARIES ${copyq_qt}::${copyq_qt_module})

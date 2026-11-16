@@ -18,6 +18,7 @@
 #include "common/textdata.h"
 #include "gui/clipboardbrowser.h"
 #include "gui/filedialog.h"
+#include "gui/flycutsync.h"
 #include "gui/geometry.h"
 #include "gui/iconfactory.h"
 #include "gui/icons.h"
@@ -926,6 +927,46 @@ bool ScriptableProxy::isMainWindowFocused()
 {
     INVOKE(isMainWindowFocused, ());
     return m_wnd->isActiveWindow();
+}
+
+QString ScriptableProxy::syncStatus()
+{
+    INVOKE(syncStatus, ());
+    return m_wnd->flycutSync()->status();
+}
+
+QString ScriptableProxy::syncNow()
+{
+    INVOKE(syncNow, ());
+    return m_wnd->flycutSync()->syncNow();
+}
+
+void ScriptableProxy::openHistoryInBrowser()
+{
+    INVOKE2(openHistoryInBrowser, ());
+    m_wnd->openHistoryInBrowser();
+}
+
+QVariantMap ScriptableProxy::syncHistoryLink()
+{
+    INVOKE(syncHistoryLink, ());
+    QString error;
+    const QString url = m_wnd->flycutSync()->historyUrl(&error);
+    return {{QStringLiteral("url"), url}, {QStringLiteral("error"), error}};
+}
+
+QVariantMap ScriptableProxy::searchSyncArchive(const QString &query, int list, int limit, int offset)
+{
+    INVOKE(searchSyncArchive, (query, list, limit, offset));
+    const auto result = m_wnd->flycutSync()->searchArchive(query, list, limit, offset);
+    QVariantList items;
+    for (const auto &item : result.items)
+        items.append(item);
+    return {
+        {QStringLiteral("matched"), result.matched},
+        {QStringLiteral("items"), items},
+        {QStringLiteral("error"), result.error},
+    };
 }
 
 bool ScriptableProxy::preview(const QVariant &arg)

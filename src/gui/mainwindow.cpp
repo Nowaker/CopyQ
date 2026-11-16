@@ -32,6 +32,7 @@
 #include "gui/commanddialog.h"
 #include "gui/configurationmanager.h"
 #include "gui/encryptionpassword.h"
+#include "gui/flycutsync.h"
 #include "gui/geometry.h"
 #include "gui/hiddenmenubar.h"
 #include "gui/importexportdialog.h"
@@ -772,6 +773,10 @@ MainWindow::MainWindow(const ClipboardBrowserSharedPtr &sharedData, QWidget *par
     m_sharedData->passwordPrompt = new PasswordPrompt(this);
     m_sharedData->menuItems = menuItems();
 
+    m_flycutSync = new FlycutSync(this);
+    m_sharedData->flycutSync = m_flycutSync;
+    connect( m_flycutSync, &FlycutSync::error, this, &MainWindow::showError );
+
     setWindowRole(QStringLiteral("main"));
 
     menuBar()->setObjectName("menu_bar");
@@ -864,6 +869,7 @@ MainWindow::MainWindow(const ClipboardBrowserSharedPtr &sharedData, QWidget *par
     m_trayMenu->setDefaultAction(act);
     addTrayAction(Actions::File_Preferences);
     addTrayAction(Actions::File_ToggleClipboardStoring);
+    addTrayAction(Actions::File_OpenHistoryInBrowser);
     m_trayMenu->addSeparator();
     addTrayAction(Actions::File_Exit);
 
@@ -1020,6 +1026,9 @@ void MainWindow::createMenu()
 
     // - enable/disable
     createAction( Actions::File_ToggleClipboardStoring, &MainWindow::toggleClipboardStoring, menu );
+
+    // - web history of the sync server
+    createAction( Actions::File_OpenHistoryInBrowser, &MainWindow::openHistoryInBrowser, menu );
 
     // - separator
     menu->addSeparator();
@@ -1469,6 +1478,8 @@ void MainWindow::moveToBottom()
 
 void MainWindow::onBrowserCreated(ClipboardBrowser *browser)
 {
+    m_flycutSync->watchBrowser(browser);
+
     connect( browser, &ClipboardBrowser::changeClipboard,
              this, &MainWindow::setClipboardAndSelection );
     connect( browser, &ClipboardBrowser::requestShow,
@@ -3254,6 +3265,7 @@ void MainWindow::loadSettings(QSettings &settings, AppConfig *appConfig)
     m_options.trayImages = appConfig->option<Config::tray_images>();
     m_options.trayMenuOpenOnLeftClick = appConfig->option<Config::tray_menu_open_on_left_click>();
     m_options.clipboardTab = appConfig->option<Config::clipboard_tab>();
+    m_flycutSync->loadSettings(*appConfig);
 
     m_singleClickActivate = appConfig->option<Config::activate_item_with_single_click>();
 
@@ -3833,7 +3845,12 @@ void MainWindow::setClipboard(const QVariantMap &data, ClipboardMode mode)
 
 void MainWindow::setClipboardAndSelection(const QVariantMap &data)
 {
-    setClipboard(data);
+    setClipboard( m_flycutSync->restoreEvictedFormats(data) );
+}
+
+void MainWindow::openHistoryInBrowser()
+{
+    m_flycutSync->openHistoryInBrowser();
 }
 
 void MainWindow::moveToClipboard(ClipboardBrowser *c, int row)

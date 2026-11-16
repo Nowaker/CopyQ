@@ -19,6 +19,7 @@
 #include "common/settings.h"
 #include "gui/clipboardbrowsershared.h"
 #include "gui/configtabappearance.h"
+#include "gui/configtabsync.h"
 #include "gui/configtabtabs.h"
 #include "gui/encryptionpassword.h"
 #include "gui/iconfactory.h"
@@ -139,6 +140,9 @@ ConfigurationManager::ConfigurationManager(const ClipboardBrowserSharedPtr &shar
 
     if (itemFactory)
         m_tabShortcuts->addCommands( itemFactory->commands() );
+
+    if (m_sharedData)
+        m_tabSync->setFlycutSync(m_sharedData->flycutSync);
 }
 
 ConfigurationManager::ConfigurationManager()
@@ -162,6 +166,7 @@ void ConfigurationManager::initTabIcons()
     list->appendItem( tr("General"), getIcon("", IconWrench), makeTab(m_tabGeneral, this) );
     list->appendItem( tr("Layout"), getIcon("", IconTableColumns), makeTab(m_tabLayout, this) );
     list->appendItem( tr("History"), getIcon("", IconList), makeTab(m_tabHistory, this) );
+    list->appendItem( tr("Sync"), getIcon("", IconCloud), makeTab(&m_tabSync, this) );
     list->appendItem( tr("Tray"), getIcon("", IconInbox), makeTab(m_tabTray, this) );
     list->appendItem( tr("Notifications"), getIcon("", IconCircleInfo), makeTab(m_tabNotifications, this) );
     list->appendItem( tr("Tabs"), getIconFromResources("tab_rename"), makeTab(&m_tabTabs, this) );
@@ -266,6 +271,11 @@ void ConfigurationManager::initOptions()
     bind<Config::expire_tab>(m_tabHistory->spinBoxExpireTab);
     bind<Config::expire_encrypted_tab_seconds>(m_tabHistory->spinBoxExpireEncryptedTabSeconds);
     bind<Config::editor>(m_tabHistory->lineEditEditor);
+    bind<Config::flycut_sync>(m_tabSync->checkBoxSync);
+    bind<Config::flycut_sync_server>(m_tabSync->lineEditServer);
+    bind<Config::flycut_sync_favorites_tab>(m_tabSync->lineEditFavoritesTab);
+    bind<Config::flycut_sync_token_file>();
+    bind<Config::flycut_sync_bridge_state>();
     bind<Config::item_popup_interval>(m_tabNotifications->spinBoxNotificationPopupInterval);
     bind<Config::notification_position>(m_tabNotifications->comboBoxNotificationPosition);
     bind<Config::clipboard_notification_lines>(m_tabNotifications->spinBoxClipboardNotificationLines);
@@ -556,6 +566,8 @@ void ConfigurationManager::connectSlots()
 void ConfigurationManager::apply(AppConfig *appConfig)
 {
     Settings &settings = appConfig->settings();
+
+    m_tabSync->saveToken();
 
     settings.beginGroup("Options");
     for (auto it = m_options.constBegin(); it != m_options.constEnd(); ++it)
