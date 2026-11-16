@@ -38,7 +38,6 @@ namespace {
 
 using FlycutSyncFormat::mimeApp;
 using FlycutSyncFormat::mimeClipId;
-using FlycutSyncFormat::mimeCopiedAt;
 using FlycutSyncFormat::mimeMachine;
 using FlycutSyncFormat::mimeRank;
 
